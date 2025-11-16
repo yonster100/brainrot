@@ -1,1136 +1,482 @@
-import {useState, useRef, useTransition} from "react"
+import { useState, useRef } from "react"
+import "./App.css"
 
-
-
-function TabButton({active, label}) {
-
-    
-
-   
-
-    const tabStyle = (active) => ({
-
-        display: "inline-block",
-
-        padding: "8px 16px 8px 16px",
-
-        cursor: "pointer",
-
-        backgroundColor: active ? "#444" : "#222",
-
-        borderBottom: active ? "2px solid blue" : "none",
-
-        width: "200px",
-
-        
-
-    });
-
-    return (
-
-        <span style={tabStyle(active)}>
-
-        {label}
-
-        </span>
-
-    );
-
+// Tab Button Component
+function TabButton({ active, label, onClick }) {
+  return (
+    <button
+      className={`tab-button ${active ? 'active' : ''}`}
+      onClick={onClick}
+      aria-pressed={active}
+      role="tab"
+    >
+      {label}
+    </button>
+  );
 }
 
-function SwitchBoard({tabs, activeTab, setActiveTab}) {
-
-    const myStyle = {
-
-        backgroundColor: "black",
-
-        color: "white",
-
-        padding: "0px",
-
-        borderRadius: "0px 0px 6px 0px",
-
-        textAlign: "left",
-
-    };
-
-    
-
-    return (
-
-        <div style={myStyle}>
-
-        <h1>Brain</h1>
-
-        <SearchBar/>
-
-        {tabs.map((x, i) => 
-
-            (
-
-                <div key={i} onClick={() => setActiveTab(i)}>
-
-                    <TabButton active={i === activeTab} label={x.label}/>
-
-                </div>
-
-            )
-
-        )}
-
-        </div>
-
-    );
-
+// Sidebar/Navigation Component
+function Sidebar({ tabs, activeTab, setActiveTab }) {
+  return (
+    <aside className="sidebar" role="navigation" aria-label="Main navigation">
+      <div className="sidebar-header">
+        <h1 className="sidebar-title">Brain</h1>
+        <SearchBar />
+      </div>
+      <nav className="sidebar-nav" role="tablist">
+        {tabs.map((tab, index) => (
+          <TabButton
+            key={tab.id}
+            active={index === activeTab}
+            label={tab.label}
+            onClick={() => setActiveTab(index)}
+          />
+        ))}
+      </nav>
+    </aside>
+  );
 }
 
-function ActiveContent({content}) {
-
-    const myStyle = {
-
-        color: "black",
-
-        marginTop: "0px",
-
-        padding: "0px",
-
-        backgroundColor: "white",
-
-        height: "100vh",
-
-        width: "100vw",
-
-    }
-
-    return (
-
-        <div style={myStyle}>
-
-            {content}
-
-        </div>
-
-    );
-
+// Main Content Area Component
+function MainContentArea({ content }) {
+  return (
+    <main className="main-content" role="main">
+      <div className="content-section">
+        {content}
+      </div>
+    </main>
+  );
 }
 
-function ToggleSwitch2({id, update}) {
+// Toggle Switch Component (Modern)
+function ToggleSwitch({ id, label, onChange }) {
+  const [active, setActive] = useState(false);
+  
+  const handleToggle = () => {
+    const newState = !active;
+    setActive(newState);
+    onChange?.(newState ? "ON" : "OFF");
+  };
 
-    const [active, setActive] = useState(false);
-
-    const toggle = () => {
-
-        update?.(active ? "OFF" : "ON");
-
-        setActive(!active);
-
-    };
-
-    const animationStyle = {
-
-        backgroundColor: active ? "#88f" : "#222",
-
-        transition: "background-color 0.3s, transform 0.3s",
-
-        transform: active ? "translateX(36px)" : "translateX(0px)",
-
-        color: "white",
-
-        borderRadius: "36px",
-
-        border: "3px solid green",
-
-        cursor: "pointer",
-
-        outline: "None",
-
-        padding: "5px",
-
-        width: "6px",
-
-        height: "6px",
-
-    };
-
-    const hiddenCheckbox = {
-
-        display: "none",
-
-        width: "0",
-
-        height: "0",
-
-    }
-
-    return (
-
-        <div
-
-            onClick={toggle}
-
-            style={{
-
-                backgroundColor: active ? "#8f8" : "#222",
-
-                color: "white",
-
-                borderRadius: "36px",
-
-                border: "3px solid green",
-
-                cursor: "pointer",
-
-                transition: "background-color 0.3s",
-
-                outline: "None",
-
-                padding: "5px",
-
-                width: "56px",
-
-            }}
-
-        >
-
-            <input id={id} style={hiddenCheckbox} type={"checkbox"} checked={active}/>
-
-            <div style={animationStyle}>
-
-            </div>
-
-        </div>
-
-    );
-
+  return (
+    <div className="toggle-wrapper">
+      <button
+        id={id}
+        className={`toggle-switch ${active ? 'active' : ''}`}
+        onClick={handleToggle}
+        role="switch"
+        aria-checked={active}
+        aria-label={label || "Toggle switch"}
+      >
+        <span className="toggle-switch-slider" />
+        <span className="sr-only">{active ? "On" : "Off"}</span>
+      </button>
+      {label && <label htmlFor={id}>{active ? "ON" : "OFF"}</label>}
+    </div>
+  );
 }
 
-function ProgressBar({value}) {
-
-    const outerBarStyle = {
-
-        border: "3px solid #474",
-
-        borderRadius: "6px",
-
-        backgroundColor: "#abf",
-
-        height: "10px",
-
-        width: "100px",
-
-    }
-
-    const innerBarStyle = {
-
-        borderRadius: "6px",
-
-        backgroundColor: "#474",
-
-        height: "10px",
-
-        width: `calc(${value}px + 4px)`,
-
-        transform: "translateX(-2px)" // cuz for some reason, it lacks 1px
-
-    }
-
-    return (
-
-        <div style={outerBarStyle} value={value}>
-
-            <div style={innerBarStyle} value={value}>
-
-            </div>
-
-        </div>
-
-    );
-
+// Progress Bar Component
+function ProgressBar({ value, max = 100, label }) {
+  const percentage = Math.min(100, Math.max(0, (value / max) * 100));
+  
+  return (
+    <div className="progress-bar-container" role="progressbar" aria-valuenow={value} aria-valuemin="0" aria-valuemax={max} aria-label={label || "Progress"}>
+      <div 
+        className="progress-bar-fill" 
+        style={{ width: `${percentage}%` }}
+      />
+    </div>
+  );
 }
 
-function CardWrapper({children}) {
-
-    const cardStyle = {
-
-        margin: "15px",
-
-        borderRadius: "6px",
-
-        width: "300px",
-
-        backgroundColor: "#666",
-
-        display: "flex",
-
-        flexDirection: "row",
-
-        alignItems: "stretch",
-
-        justifyContent: "center",
-
-        flexWrap: "wrap",
-
-        border: "3px solid #333",
-
-        maxHeight: "300px",
-
-        overflowY: "auto",
-
-        scrollbarGutter: "stable",
-
-        // overflowClipMargin: "0px",
-
-    };
-
-    return (
-
-        <div style={cardStyle}>
-
-            {children}
-
-        </div>
-
-    );
-
+// Card Components
+function Card({ children, title }) {
+  return (
+    <article className="card">
+      {title && <h3>{title}</h3>}
+      <div className="card-content">
+        {children}
+      </div>
+    </article>
+  );
 }
 
-function Card({children}) {
-
-    const cardStyle = {
-
-        margin: "15px",
-
-        borderRadius: "6px",
-
-        width: "100px",
-
-        backgroundColor: "#6a6",
-
-        display: "flex",
-
-        textAlign: "center",
-
-        alignItems: "center",
-
-        justifyContent: "center",
-
-        minHeight: "50px",
-
-    };
-
-    return (
-
-        <div style={cardStyle}>
-
-            {children}
-
-        </div>
-
-    );
-
-}
-
-function ToggleSwitch({id}) {
-
-    const [active, setActive] = useState(false);
-
-    const toggle = () => {setActive(!active)};
-
-    return (
-
-        <button
-
-            onClick={toggle}
-
-            style={{
-
-                backgroundColor: active ? "#889" : "#222",
-
-                color: "white",
-
-                borderRadius: "6px",
-
-                border: "3px solid green",
-
-                cursor: "pointer",
-
-                transition: "background-color 0.3s",
-
-                outline: "None",
-
-                padding: "5px",
-
-                width: "56px",
-
-            }}>
-
-            {active ? "ON" : "OFF"}
-
-        </button>
-
-    );
-
-}
-
-function DropDown({myList, children, selectedOption, refocus = () => {}}) {
-
-    const [select, setSelect] = useState(myList && myList[0]);
-
-    const [openDropDown, setOpenDropDown] = useState(false);
-
-    const wrapperStyle = {
-
-        position: "relative",
-
-        display: "inline-block",
-
-        userSelect: "none",
-
-    }
-
-    const dropDownStyle = {
-
-        backgroundColor: "#555",
-
-        position: "absolute",
-
-        top: "100%",
-
-        left: 0,
-
-        right: 0,
-
-        overflow: "hidden",
-
-        zIndex: 10,
-
-    };
-
-    const [hover, setHover] = useState(null);
-
-    const optionStyle = (isHovered) => {return {
-
-        padding: "6px",
-
-        backgroundColor: isHovered ? "#333" : "#666",
-
-        color: "white",
-
-        cursor: "pointer",
-
-    }};
-
-    
-
-    const [lateTrigger, setLateTrigger] = useState(false);
-
-    return (  
-
-        <div style={wrapperStyle}>
-
-            {/* Options */}
-
-            {openDropDown && (<div style={dropDownStyle} onClick={refocus}>
-
-                {myList.map(x => 
-
-                    <div key={x}
-
-                        onClick={() => {
-
-                            setSelect(x);
-
-                            setOpenDropDown(false);
-
-                            selectedOption?.(x);
-
-                        }}
-
-                        style={optionStyle(hover === x)}
-
-                        onMouseEnter={() => setHover(x)}
-
-                        onMouseLeave={() => setHover(null)}
-
-                    >
-
-                        {x}
-
-                    </div>
-
-                )}
-
-                </div>
-
-            )}
-
-            
-
-            <div onClick={() => setOpenDropDown(!openDropDown)}>
-
-                {children}
-
-            </div>
-
-        </div>
-
-    );
-
-}
-
-function SelectInput({id, myList}) {
-
-    const myStyle = {
-
-        border: "3px solid green",
-
-        backgroundColor: "#999",
-
-        outline: "None",
-
-        width: "100px",
-
-        height: "30px",
-
-    };
-
-    
-
-    const [inputValue, setInputValue] = useState(myList && myList[0]);
-
-    return (
-
-        <DropDown id={id} style={myStyle} myList={myList} 
-
-            selectedOption={(x) => {
-
-                console.log(`You selected ${x}`);
-
-                setInputValue(x)
-
-            }}
-
-        >
-
-                
-
-            <div style={myStyle}
-
-                type="text"
-
-                placeHolder={"random"}
-
+// Dropdown Component
+function Dropdown({ id, options, selectedOption, onChange, placeholder = "Select..." }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selected, setSelected] = useState(options?.[0] || placeholder);
+  const dropdownRef = useRef(null);
+
+  const handleSelect = (option) => {
+    setSelected(option);
+    setIsOpen(false);
+    onChange?.(option);
+  };
+
+  return (
+    <div className="dropdown-wrapper" ref={dropdownRef}>
+      <button
+        id={id}
+        className="dropdown-trigger"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+      >
+        <span>{selected}</span>
+        <span>{isOpen ? '▲' : '▼'}</span>
+      </button>
+      
+      {isOpen && (
+        <ul className="dropdown-menu" role="listbox">
+          {options?.map((option) => (
+            <li
+              key={option}
+              className="dropdown-item"
+              onClick={() => handleSelect(option)}
+              role="option"
+              aria-selected={option === selected}
             >
-
-                <span style={{paddingLeft: "10px"}}>{inputValue}</span>
-
-            </div>
-
-        </DropDown>
-
-    );
-
+              {option}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
 
-function SearchBar({id, placeHolder = "US", data = ["The Goonies", "Dr Panda", "Peppa Pig", "Miss R"]}) {
+// Search Bar Component
+function SearchBar({ placeholder = "Search...", data = ["The Goonies", "Dr Panda", "Peppa Pig", "Miss R"] }) {
+  const [inputValue, setInputValue] = useState("");
+  const [filteredList, setFilteredList] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const inputRef = useRef(null);
 
-    const [currentList, setCurrentList] = useState(data);
-
-    const [inputValue, setInputValue] = useState("");
-
-    {/* Design of the text area*/}
-
+  const handleChange = (e) => {
+    const value = e.target.value;
+    setInputValue(value);
     
-
-    const myStyle = {
-
-        border: "0px",
-
-        backgroundColor: "#999",
-
-        color: "white",
-
-        outline: "None",
-
-        height: "30px",
-
-        width: "198px",
-
-    };
-
-    const submitButtonStyle = {
-
-        position: "absolute",
-
-        border: "0px",
-
-        backgroundColor: "#373",
-
-        color: "#484",
-
-        outline: "None",
-
-        height: "32px",
-
-        width: "30px",
-
-    };
-
-    function makeChange(e) {
-
-        setInputValue(e.target.value);
-
-        setCurrentList(data.filter(x => x.toLowerCase().includes(e.target.value.toLowerCase())));
-
+    if (value.trim()) {
+      const filtered = data.filter(item => 
+        item.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredList(filtered);
+      setShowDropdown(filtered.length > 0);
+    } else {
+      setShowDropdown(false);
     }
+  };
 
-    const inputFocus = useRef();
+  const handleSelect = (item) => {
+    setInputValue(item);
+    setShowDropdown(false);
+  };
 
-    const inputRefocus = () => {inputFocus.current.focus();};
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Search submitted:", inputValue);
+    setShowDropdown(false);
+  };
 
-    return (
-
-        <form>
-
-            <DropDown myList={currentList}
-
-                selectedOption={(x) => {
-
-                    console.log(`You selected ${x}`);
-
-                    setInputValue(x)
-
-                }}
-
-                refocus={inputRefocus}
-
+  return (
+    <form className="search-container" onSubmit={handleSubmit}>
+      <input
+        ref={inputRef}
+        className="search-input"
+        type="text"
+        placeholder={placeholder}
+        value={inputValue}
+        onChange={handleChange}
+        aria-label="Search"
+        autoComplete="off"
+      />
+      <button className="search-submit" type="submit" aria-label="Submit search">
+        🔍
+      </button>
+      
+      {showDropdown && (
+        <ul className="search-dropdown">
+          {filteredList.map((item) => (
+            <li
+              key={item}
+              className="search-dropdown-item"
+              onClick={() => handleSelect(item)}
             >
-
-                <input style={myStyle}
-
-                    type="text"
-
-                    placeHolder={placeHolder}
-
-                    value={inputValue}
-
-                    onChange={makeChange}
-
-                    ref={inputFocus}
-
-                />
-
-                <input style={submitButtonStyle} type="submit" value="@"/>
-
-            </DropDown>
-
-        </form>
-
-    )
-
+              {item}
+            </li>
+          ))}
+        </ul>
+      )}
+    </form>
+  );
 }
 
-function HelpContent() {
+// Tooltip Component
+function Tooltip({ children, text }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const timeoutRef = useRef(null);
 
-    return (
+  const handleMouseEnter = () => {
+    timeoutRef.current = setTimeout(() => {
+      setIsVisible(true);
+    }, 500);
+  };
 
-        <>
+  const handleMouseLeave = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    setIsVisible(false);
+  };
 
-            <CardWrapper>
-
-                <Card>
-
-                    How odd...
-
-                </Card>
-
-                <Card>
-
-                    How odd...huh....
-
-                </Card>
-
-                <Card>
-
-                    How odd... what chu mean how odd
-
-                </Card>
-
-                <Card>
-
-                    How odd...
-
-                </Card>
-
-                <Card>
-
-                    How odd...huh....
-
-                </Card>
-
-                <Card>
-
-                    How odd... what chu mean how odd
-
-                </Card>
-
-            </CardWrapper>
-
-        </>
-
-    );
-
+  return (
+    <div
+      className="tooltip-wrapper"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {children}
+      {isVisible && (
+        <div className="tooltip" role="tooltip">
+          {text}
+        </div>
+      )}
+    </div>
+  );
 }
 
+// Pie Chart Component
 function PieChart() {
+  return (
+    <div className="pie-chart" role="img" aria-label="Pie chart showing data distribution" />
+  );
+}
 
-    const pieStyle = {
+// Data Table Component
+function DataTable({ data }) {
+  if (!data || data.length === 0) {
+    return <p>No data available</p>;
+  }
 
-      width: "400px",
+  const headers = Object.keys(data[0]);
 
-      height: "400px",
+  return (
+    <div className="data-table-container">
+      <table className="data-table">
+        <thead>
+          <tr>
+            {headers.map((header) => (
+              <th key={header} scope="col">
+                {header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((row, index) => (
+            <tr key={row._id || index}>
+              {headers.map((header) => (
+                <td key={`${row._id || index}-${header}`}>
+                  {header === 'isActive' ? (
+                    <span className={`badge ${row[header] ? 'badge-success' : 'badge-danger'}`}>
+                      {row[header] ? 'Active' : 'Inactive'}
+                    </span>
+                  ) : (
+                    String(row[header])
+                  )}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
-      backgroundImage: "conic-gradient(#456 64%, #99f 64%, #99f 81%, black 81%, black 91%, #faf 91%)",
+// Page Content Components
+function MenuContent() {
+  const [dialogText, setDialogText] = useState("OFF");
 
-      borderRadius: "50%",
+  return (
+    <div>
+      <h2 className="section-title">Menu</h2>
+      
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <section>
+          <h3 style={{ marginBottom: '1rem', color: '#6b7280' }}>Select Options</h3>
+          <Dropdown
+            id="menu-select"
+            options={["Option 1", "Option 2", "Option 3"]}
+            placeholder="Choose an option"
+          />
+        </section>
 
-    };
+        <section>
+          <h3 style={{ marginBottom: '1rem', color: '#6b7280' }}>Toggle Controls</h3>
+          <Tooltip text={dialogText}>
+            <ToggleSwitch
+              id="menu-toggle"
+              label="Feature"
+              onChange={(state) => setDialogText(state)}
+            />
+          </Tooltip>
+        </section>
 
-    return (
+        <section>
+          <h3 style={{ marginBottom: '1rem', color: '#6b7280' }}>Progress</h3>
+          <ProgressBar value={65} max={100} label="Loading progress" />
+        </section>
 
-      <div style={pieStyle}/>  
-
-    );
-
+        <section>
+          <h3 style={{ marginBottom: '1rem', color: '#6b7280' }}>Data Visualization</h3>
+          <PieChart />
+        </section>
+      </div>
+    </div>
+  );
 }
 
 function SettingsContent() {
-
-    const [wrapperWidth, setWrapperWidth] = useState(200);
-
-    const wrapperStyle = {
-
-        backgroundColor: "#ccf",
-
-        width: wrapperWidth + "px",
-
-        height: "100px",
-
-        position: "absolute",
-
-        top: "50vh",
-
-        left: `calc(50vw + 116px)`,
-
-        borderRadius: "16px",
-
-        boxShadow: "0px 0px 2px 1px rgba(40, 40, 0, 0.3)",
-
-        transform: "translateY(-50%) translateX(-50%)",
-
-        alignItems: "center",
-
-        justifyContent: "center",
-
-        display: "flex",
-
-        flexDirection: "column",
-
-    }
-
-    const myHeader = {
-
-        padding: "0px",
-
-        margin: "0px",
-
-        display: "flex",
-
-        fontSize: "15px",
-
-    }
-
-    const inputStyle = {
-
-        width: "125px",
-
-        alignItems: "center",
-
-        justifyContent: "center",
-
-        borderRadius: "6px",
-
-        border: "3px solid gray",
-
-        outline: "none",
-
-    }
-
-    const submitButton = {
-
-        width: "60px",
-
-        outline: "none",
-
-        border: "3px solid #999",
-
-        backgroundColor: "#ccc",
-
-    }
-
-    return (
-
-        <>
-
-            <form>
-
-            <div style={wrapperStyle}>
-
-                <h1 style={myHeader}>Log</h1>
-
-                <DialogBox textDialog="username">
-
-                    <input type="text" style={inputStyle}/>
-
-                </DialogBox>
-
-                <DialogBox textDialog="password">
-
-                    <input type="password" style={inputStyle}/>
-
-                </DialogBox>
-
-                <input type="submit" style={submitButton}/>
-
-            </div>
-
-            </form>
-
-        </>
-
-    );
-
-}
-
-function MenuContent() {
-
-    const [dialogText, setDialogText] = useState("OFF");
-
-    return (
-
-        <>
-
-            <span>This is menu content</span>
-
-            <SelectInput id="random" myList={["huh", "123", "ohh"]}/>
-
-            <p></p>
-
-            <DialogBox textDialog={dialogText}>
-
-                <ToggleSwitch2 update={(content) => {setDialogText(content)}}/>
-
-            </DialogBox>
-
-            <PieChart/>
-
-            <ProgressBar value={0}/>
-
-        </>
-
-    );
-
-}
-
-function DialogBox({id, children, textDialog}) {
-
-    const [isHovered, setIsHovered] = useState(false);
-
-    const dialogTimer = useRef(null);
-
-    const dialogAppearTimeout = 500;
-
-    const dialogBoxStyle = {
-
-        position: "absolute",
-
-        backgroundColor: "#999",
-
-        padding: "10px",
-
-        color: "white",
-
-        borderRadius: "6px",
-
-        boxShadow: '0 3px 5px rgba(0, 0, 0, 0.1)',
-
-        zIndex: "10",
-
-    };
-
-    const triangleShapeStyle = {
-
-        position: "absolute",
-
-        backgroundColor: "#999",
-
-        position: 'absolute',
-
-        top: '-10px',
-
-        left: '50%',
-
-        borderWidth: '3px 3px 3px 3px',
-
-        borderStyle: 'solid',
-
-        borderColor: '#999 transparent transparent transparent',
-
-    };
-
-    return (
-
-        <div onMouseEnter={() => {
-
-                clearTimeout(dialogTimer.current);
-
-                dialogTimer.current = setTimeout(() => 
-
-                    setIsHovered(true), dialogAppearTimeout);
-
-            }}
-
-            onMouseLeave={() => {
-
-                clearTimeout(dialogTimer.current);
-
-                setIsHovered(false);
-
-                dialogTimer.current = null;
-
-            }}
-
-            style={{
-
-                position: "relative",
-
-                display: "inline-block",
-
-                userSelect: "none",
-
-            }}
-
-        >
-
-            {children}
-
-            {isHovered && (
-
-                /* Dialog box starts here*/
-
-                <div style={dialogBoxStyle}>
-
-                    <div style={triangleShapeStyle}/>
-
-                    {textDialog}
-
-                </div>
-
-            )}
-
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const username = formData.get('username');
+    const password = formData.get('password');
+    console.log('Login attempt:', { username, password: '***' });
+  };
+
+  return (
+    <div>
+      <h2 className="section-title">Settings</h2>
+      
+      <form className="login-form" onSubmit={handleSubmit}>
+        <h2>Sign In</h2>
+        
+        <div className="form-group">
+          <label htmlFor="username" className="form-label">
+            Username
+          </label>
+          <Tooltip text="Enter your username">
+            <input
+              id="username"
+              name="username"
+              type="text"
+              className="form-input"
+              placeholder="Enter username"
+              required
+              aria-required="true"
+            />
+          </Tooltip>
         </div>
 
-    );
-
-}
-
-function DatabaseTable({data}) {
-
-    const tableStyle = {
-
-        display: "grid",
-
-        gap: "3px",
-
-        gridTemplateColumns: Array(Object.keys(data && data[0]).length).fill('1fr').join(' '),
-
-        overflowX: "auto",
-
-        width: "calc(100vw - 232px)",
-
-        overflowY: "auto",
-
-        maxHeight: "100vh",
-
-    };
-
-    const headerStyle = {
-
-        background: "#eee",
-
-    };
-
-    const cellStyle = (odd) => {return {
-
-        backgroundColor: odd ? "#bcb" : "#cec",
-
-        display: "flex",
-
-        justifyContent: "flex-end",
-
-    }};
-
-    return (
-
-        <div style={{backgroundColor: "green",}}>
-
-            <div style={tableStyle}>
-
-                {Object.entries(data && data[0]).map(([k,v]) => <strong style={headerStyle}>{String(k)}</strong>)}
-
-                {data.map((x, i) => 
-
-                    { return (
-
-                        <>
-
-                        {Object.entries(x).map(([k,v]) => <div style={cellStyle(i % 2)}>{String(v)}</div>)}
-
-                        </>
-
-                    );})
-
-                }
-
-            </div>
-
+        <div className="form-group">
+          <label htmlFor="password" className="form-label">
+            Password
+          </label>
+          <Tooltip text="Enter your password">
+            <input
+              id="password"
+              name="password"
+              type="password"
+              className="form-input"
+              placeholder="Enter password"
+              required
+              aria-required="true"
+            />
+          </Tooltip>
         </div>
 
-    );
-
+        <button type="submit" className="form-submit">
+          Sign In
+        </button>
+      </form>
+    </div>
+  );
 }
 
-function FeaturedPage() {
+function HelpContent() {
+  const helpCards = [
+    { id: 1, title: "Getting Started", content: "Learn the basics of using this application." },
+    { id: 2, title: "Features", content: "Explore all available features and tools." },
+    { id: 3, title: "Keyboard Shortcuts", content: "Speed up your workflow with shortcuts." },
+    { id: 4, title: "Settings", content: "Customize your experience." },
+    { id: 5, title: "Support", content: "Get help when you need it." },
+    { id: 6, title: "Updates", content: "Stay informed about new features." },
+  ];
 
-    const exampleDB = [
-
-      {
-
-        "_id": "6551b94e3a4e9b0d6c8f9d0c",
-
-        "username": "CodeNinja123",
-
-        "role": "Developer",
-
-        "isActive": true
-
-      },
-
-      {
-
-        "_id": "6551b94e3a4e9b0d6c8f9d0d",
-
-        "username": "DesignGuru456",
-
-        "role": "Designer",
-
-        "isActive": false
-
-      },
-
-      {
-
-        "_id": "6551b94e3a4e9b0d6c8f9d0e",
-
-        "username": "DataMiner789",
-
-        "role": "Analyst",
-
-        "isActive": true
-
-      },
-
-      {
-
-        "_id": "6551b94e3a4e9b0d6c8f9d0e",
-
-        "username": "DataMiner789",
-
-        "role": "Analyst",
-
-        "isActive": true
-
-      },
-
-      {
-
-        "_id": "6551b94e3a4e9b0d6c8f9d0e",
-
-        "username": "DataMiner789",
-
-        "role": "Analyst",
-
-        "isActive": true
-
-      }
-
-    ];
-
-    return (
-
-        <DatabaseTable data={exampleDB}/>
-
-    );
-
+  return (
+    <div>
+      <h2 className="section-title">Help Center</h2>
+      <div className="card-grid">
+        {helpCards.map((card) => (
+          <Card key={card.id} title={card.title}>
+            {card.content}
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
 }
 
-function MainPage() {
-
-    const menu = [
-
-        {label: "Menu", content: <MenuContent />},
-
-        {label: "Settings", content: <SettingsContent />}, 
-
-        {label: "Help", content: <HelpContent />},
-
-        {label: "Featured Content", content: <FeaturedPage/>},
-
-     ];
-
-    const [activeTab, setActiveTab] = useState(0);
-
-    const myStyle = {
-
-        display: "flex",
-
-        alignItems: "flex-start",
-
-        backgroundColor: "#333",
-
-        width: "100vw",
-
-        height: "100vh",
-
+function FeaturedContent() {
+  const exampleData = [
+    {
+      _id: "6551b94e3a4e9b0d6c8f9d0c",
+      username: "CodeNinja123",
+      role: "Developer",
+      isActive: true
+    },
+    {
+      _id: "6551b94e3a4e9b0d6c8f9d0d",
+      username: "DesignGuru456",
+      role: "Designer",
+      isActive: false
+    },
+    {
+      _id: "6551b94e3a4e9b0d6c8f9d0e",
+      username: "DataMiner789",
+      role: "Analyst",
+      isActive: true
+    },
+    {
+      _id: "6551b94e3a4e9b0d6c8f9d0f",
+      username: "ProductPro101",
+      role: "Manager",
+      isActive: true
+    },
+    {
+      _id: "6551b94e3a4e9b0d6c8f9d10",
+      username: "QAExpert202",
+      role: "QA Engineer",
+      isActive: false
     }
+  ];
 
-    return (
-
-        <div style={myStyle}>
-
-            <SwitchBoard tabs={menu} activeTab={activeTab} setActiveTab={setActiveTab}/>
-
-            <ActiveContent content={menu[activeTab].content} />
-
-        </div>
-
-    );
-
+  return (
+    <div>
+      <h2 className="section-title">User Database</h2>
+      <DataTable data={exampleData} />
+    </div>
+  );
 }
 
+// Main App Component
 export default function App() {
+  const tabs = [
+    { id: "menu", label: "Menu", content: <MenuContent /> },
+    { id: "settings", label: "Settings", content: <SettingsContent /> },
+    { id: "help", label: "Help", content: <HelpContent /> },
+    { id: "featured", label: "Featured Content", content: <FeaturedContent /> },
+  ];
 
-    return <MainPage/>;
+  const [activeTab, setActiveTab] = useState(0);
 
+  return (
+    <div className="app-container">
+      <Sidebar tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
+      <MainContentArea content={tabs[activeTab].content} />
+    </div>
+  );
 }
-
