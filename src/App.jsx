@@ -91,6 +91,14 @@ function ProgressBar({ value, max = 100, label }) {
 }
 
 // Card Components
+function CardWrapper({ children }) {
+  return (
+    <div className="card-wrapper">
+      {children}
+    </div>
+  );
+}
+
 function Card({ children, title }) {
   return (
     <article className="card">
@@ -99,6 +107,71 @@ function Card({ children, title }) {
         {children}
       </div>
     </article>
+  );
+}
+
+// Animated Toggle Switch (ToggleSwitch2)
+function AnimatedToggle({ id, label, onChange }) {
+  const [active, setActive] = useState(false);
+  
+  const handleToggle = () => {
+    const newState = !active;
+    setActive(newState);
+    onChange?.(newState ? "ON" : "OFF");
+  };
+
+  return (
+    <div className="toggle-wrapper">
+      <button
+        id={id}
+        className={`animated-toggle ${active ? 'active' : ''}`}
+        onClick={handleToggle}
+        role="switch"
+        aria-checked={active}
+        aria-label={label || "Animated toggle switch"}
+      >
+        <span className="animated-toggle-slider" />
+        <span className="sr-only">{active ? "On" : "Off"}</span>
+      </button>
+      {label && <label htmlFor={id}>{active ? "ON" : "OFF"}</label>}
+    </div>
+  );
+}
+
+// Select Input Component
+function SelectInput({ id, myList, onChange }) {
+  const [selected, setSelected] = useState(myList?.[0] || "");
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleSelect = (option) => {
+    setSelected(option);
+    setIsOpen(false);
+    onChange?.(option);
+    console.log(`You selected ${option}`);
+  };
+
+  return (
+    <div className="select-input-wrapper">
+      <div
+        className="select-input-trigger"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span>{selected}</span>
+      </div>
+      {isOpen && (
+        <ul className="select-input-dropdown">
+          {myList?.map((option) => (
+            <li
+              key={option}
+              className="select-input-item"
+              onClick={() => handleSelect(option)}
+            >
+              {option}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
@@ -305,18 +378,18 @@ function MenuContent() {
       
       <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
         <section>
-          <h3 style={{ marginBottom: '1rem', color: '#6b7280' }}>Select Options</h3>
-          <Dropdown
-            id="menu-select"
-            options={["Option 1", "Option 2", "Option 3"]}
-            placeholder="Choose an option"
-          />
+          <span>This is menu content</span>
+        </section>
+
+        <section>
+          <h3 style={{ marginBottom: '1rem', color: '#6b7280' }}>Select Input</h3>
+          <SelectInput id="random" myList={["huh", "123", "ohh"]} />
         </section>
 
         <section>
           <h3 style={{ marginBottom: '1rem', color: '#6b7280' }}>Toggle Controls</h3>
           <Tooltip text={dialogText}>
-            <ToggleSwitch
+            <AnimatedToggle
               id="menu-toggle"
               label="Feature"
               onChange={(state) => setDialogText(state)}
@@ -325,13 +398,13 @@ function MenuContent() {
         </section>
 
         <section>
-          <h3 style={{ marginBottom: '1rem', color: '#6b7280' }}>Progress</h3>
-          <ProgressBar value={65} max={100} label="Loading progress" />
+          <h3 style={{ marginBottom: '1rem', color: '#6b7280' }}>Data Visualization</h3>
+          <PieChart />
         </section>
 
         <section>
-          <h3 style={{ marginBottom: '1rem', color: '#6b7280' }}>Data Visualization</h3>
-          <PieChart />
+          <h3 style={{ marginBottom: '1rem', color: '#6b7280' }}>Progress</h3>
+          <ProgressBar value={0} max={100} label="Loading progress" />
         </section>
       </div>
     </div>
@@ -397,25 +470,29 @@ function SettingsContent() {
 }
 
 function HelpContent() {
-  const helpCards = [
-    { id: 1, title: "Getting Started", content: "Learn the basics of using this application." },
-    { id: 2, title: "Features", content: "Explore all available features and tools." },
-    { id: 3, title: "Keyboard Shortcuts", content: "Speed up your workflow with shortcuts." },
-    { id: 4, title: "Settings", content: "Customize your experience." },
-    { id: 5, title: "Support", content: "Get help when you need it." },
-    { id: 6, title: "Updates", content: "Stay informed about new features." },
-  ];
-
   return (
     <div>
       <h2 className="section-title">Help Center</h2>
-      <div className="card-grid">
-        {helpCards.map((card) => (
-          <Card key={card.id} title={card.title}>
-            {card.content}
-          </Card>
-        ))}
-      </div>
+      <CardWrapper>
+        <Card>
+          How odd...
+        </Card>
+        <Card>
+          How odd...huh....
+        </Card>
+        <Card>
+          How odd... what chu mean how odd
+        </Card>
+        <Card>
+          How odd...
+        </Card>
+        <Card>
+          How odd...huh....
+        </Card>
+        <Card>
+          How odd... what chu mean how odd
+        </Card>
+      </CardWrapper>
     </div>
   );
 }
